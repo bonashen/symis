@@ -701,7 +701,6 @@ option.fn = option.prototype = {
 option.fn.init.prototype = option.fn;
 
 
-
 //==============================================
 require(['thirty/fromq', 'thirty/perf', 'thirty/logger'], function (fromq, testTime, Logger) {
     var logger = Logger("fromq Operator Test");
@@ -841,6 +840,22 @@ require(['thirty/fromq', 'thirty/perf', 'thirty/logger'], function (fromq, testT
     testTime(function () {
         fq.notIn(a2);
     }, "fromq.notIn", logger);
+
+    testTime(function () {
+        var m = {value: 0};
+        loop(function () {
+            with (m) {
+                value = value + 1;
+            }
+        });
+    }, "with.test", logger);
+
+    testTime(function () {
+        var m = {value: 0};
+        loop(function () {
+            m.value = m.value + 1;
+        });
+    }, "nowith.test", logger);
 
     logger.flush();
 });
