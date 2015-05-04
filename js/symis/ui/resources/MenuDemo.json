@@ -1,0 +1,107 @@
+{
+  "identifier": "name",
+  "label": "name",
+  "items": [
+    {
+      "name": "造船信息管理",
+      "children": [
+        {
+          "name": "物资管理",
+          "children": [
+            {
+              "name": "采购管理",
+              "children": [
+                {
+                  "name": "合同管理",
+                  "children": [
+                    {
+                      "name": "合同目录",
+                      "url":"symis/ui/view/lm/ContractList",
+                      "cmdCode":"S0255"
+                    },
+                    {
+                      "name": "创建新合同"
+                    },
+                    {
+                      "name": "合同票据维护"
+                    },
+                    {
+                      "name": "登记合同签报"
+                    },
+                    {
+                      "name": "归档合同"
+                    }
+                  ]
+                },
+                {
+                  "name": "交货期管理",
+                  "children": [
+                    {"name": "交货期计划管理"},
+                    {"name": "标准纳期管理"},
+                    {"name": "到货登记"}
+                  ]
+                },
+                {
+                  "name": "综合查询",
+                  "children": [
+                    {"name": "项目物资到货情况"},
+                    {"name": "合同近期完成率情况"},
+                    {"name": "项目物资到货计划与大节点对比线表"},
+                    {"name": "设备厂商合同支付情况"}
+                  ]
+                }
+              ]
+            },{
+              "name":"物资出库",
+              "children":[
+                {
+                  "name":"出库查询",
+                  "children":[
+                    {
+                      "name":"项目出库查询"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "成本管理",
+          "children": [
+            {
+              "name": "登记成本",
+              "children": [
+                {"name": "登记采购合同项成本"}
+              ]
+            },
+            {
+              "name": "采购合同成本分析",
+              "children": [
+                {"name": "同型船合同项成本对比分析"},
+                {"name": "物资类别成本对比分析"}
+              ]
+            }
+          ]
+        },
+
+        {
+          "name": "基础配置",
+          "children": [
+            {"name": "船型登记"},
+            {"name": "设备厂商登记"},
+            {"name": "项目节点计划"},
+            {"name": "设备类型管理"},
+            {"name": "报警配置"}
+          ]
+        },
+        {"name": "权限管理",
+        "children":[
+          {"name": "用户管理","url":"symis/ui/view/sys/UserManager","cmdCode":"S9001"},
+          {"name": "用户权限管理"}
+        ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+    <title>Symis-造船综合管理信息平台</title>
+    <!-- import ccs -->
+    <!--
+    <link href="js/lib/dojo-1.10/dijit/themes/dijit.css" rel="stylesheet"/>
+    <link href="js/lib/dojo-1.10/dijit/themes/claro/claro.css" rel="stylesheet"/>
+    -->
+    <link href="js/symis/ui/resources/symis.css" rel="stylesheet"/>
+
+    <!-- 加载 blackbird consoleger -->
+    <!--
+    <link type="text/css" rel="Stylesheet" href="js/lib/blackbird/blackbird.css" />
+    <script type="text/javascript" src="js/lib/blackbird/blackbird.js"></script>
+    -->
+    <!--
+     example:
+         function(args){
+            log.debug( 'this is a debug message' );
+            log.info( 'this is an info message' );
+            log.warn( 'this is a warning message' );
+            log.error( 'this is an error message' );
+        }
+
+    -->
+
+    <script type="text/javascript">
+        var dojoConfig = {
+            baseUrl: "js/",
+            tlmSiblingOfDojo: false,
+            isDebug: true,
+            parseOnLoad: false,
+            async: true,
+            /*paths: {
+             "symis": "symis"
+             },*/
+            packages: [
+                {
+                    name: "dojo",
+                    location: "lib/dojo-1.10/dojo"
+                },
+                {
+                    name: "dijit",
+                    location: "lib/dojo-1.10/dijit"
+                },
+                {
+                    name: "dojox",
+                    location: "lib/dojo-1.10/dojox"
+                },
+                {
+                    name: "symis",
+                    location: "symis"
+                },
+                {
+                    name: "gridx",
+                    location: "lib/gridx-1.3.7"
+                },
+                {
+                    name: "thirty",
+                    location: "lib/thirty"
+                }
+
+            ]
+        };
+        console.debug("symis system is loading");
+    </script>
+
+
+    <script type="application/javascript">
+
+
+        console.debug("symis system has been loaded!");
+
+    </script>
+
+
+</head>
+
+<body class="claro">
+
+
+<!--
+     <div data-dojo-type="symis.ui.view.components.LoginDialog">
+     	
+     </div>
+-->
+
+<div id="mainui" data-dojo-type="symis/ui/view/MainUI"
+     data-dojo-props="minSize:1024,menuUrl:'js/symis/ui/resources/MenuDemo.json'">
+
+</div>
+
+<script type="text/javascript" src="js/lib/dojo-1.10/dojo/dojo.js"></script>
+
+<!-- When home page has been loaded. -->
+<script type="text/javascript">
+
+    //when dom is ready.
+    require(["dojo/parser",
+                "symis/ui/cmd/CommandLoader",
+                "dojo/domReady!",
+                "symis/ui/view/MainUI"
+            ], function (parser, cmd) {
+                console.debug("dom is ready! parse html.")
+                parser.parse();
+
+                //console.debug(cmd);
+                cmd.execute();
+
+            }
+    );
+
+
+</script>
+</body>
+</html>

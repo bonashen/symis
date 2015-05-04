@@ -1,0 +1,5 @@
+{
+  "commands":[
+    { "name": "CommandBus", "package":"symis/ui/cmd/MainMenuCmd","description":"程序主菜单命令解释执行"}
+  ]
+}

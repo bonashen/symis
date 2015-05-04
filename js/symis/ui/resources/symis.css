@@ -1,0 +1,91 @@
+@import "../../../lib/dojo-1.10/dojo/resources/dojo.css";
+@import "../../../lib/dojo-1.10/dijit/themes/dijit.css";
+@import "../../../lib/dojo-1.10/dijit/themes/claro/claro.css";
+@import "../../../lib/dojo-1.10/dojox/grid/resources/Grid.css";
+@import "../../../lib/dojo-1.10/dojox/grid/resources/claroGrid.css";
+@charset "utf-8";
+/* CSS Document for symis ui */
+
+html, body {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	overflow:hidden;
+}
+
+.LoginDialogBase {
+	border: thin solid #00F;
+	position: absolute;
+	right: 10px;
+	bottom: 10px;
+}
+
+
+.LoginDialogBase .title {
+	font-family: "宋体";
+	font-size: 16px;
+	color: #FFF;
+	background-color: #06F;
+	text-align: left;
+	height: auto;
+	width: auto;
+	position: relative;
+	top: 0px;
+	left: 0px;
+	border: thin solid #03F;
+}
+
+
+.LoginDialogBase .picture {
+	/* */
+}
+
+/* CSS for UserInfoPanel */
+.UserInfoPanelBase {
+
+}
+
+
+.UserInfoPanelBase .currentUserNumber {
+	text-align: left;
+	color: #00F;
+}
+
+.UserInfoPanelBase .UserName {
+	color: #00F
+}
+
+.HomePageBase {
+
+}
+
+.MainUIBase {
+	width: 100%; /*expression(document.body.clientWidth < 1024? "1024px":"80%" );*/
+	height: 100%;/*expression(document.body.clientHeight < 768? "768px":"auto" );*/
+	margin: 0 auto; /* 水平居中 */
+}
+
+.MainUIBase .container {
+	width: 100%;
+	height: 100%;
+}
+
+.MainUIBase .container .leftMenu{
+	width:300px;
+	height: 100%;
+}
+
+.ContractListBase{
+    margin: 0 auto;
+}
+.ContractListBase .container{
+    width: 100%;
+    height: 100%;
+}
+
+.BuainessViewBase {
+    display: block;
+    overflow: auto;	/* if we don't have this (or overflow:hidden), then Widget.resizeTo() doesn't make sense for ContentPane */
+    padding: 8px;
+    -webkit-overflow-scrolling: touch;
+}

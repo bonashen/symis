@@ -1,0 +1,29 @@
+{
+  "identifier": "id",
+  "items": [
+    {
+      "id": "CICJS64-01-01",
+      "suppiler": "江西宜昌",
+      "amount": 3000,
+      "deliveryMaterial": "[主机],[主机附件]",
+      "operator": "bona shen",
+      "registerDate": "2015-03-24",
+      "ticketAmount": 3000,
+      "financeAmount": 2000,
+      "paymentAmount": 1000,
+      "status": "执行中"
+    },
+    {
+      "id": "CICJS64-01-02",
+      "suppiler": "江西宜昌",
+      "amount": 3000,
+      "deliveryMaterial": "[主机]",
+      "operator": "bona shen",
+      "registerDate": "2015-03-24",
+      "ticketAmount": 3000,
+      "financeAmount": 2000,
+      "paymentAmount": 1000,
+      "status": "执行中"
+    }
+  ]
+}

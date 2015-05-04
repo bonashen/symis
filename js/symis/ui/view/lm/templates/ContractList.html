@@ -1,0 +1,142 @@
+<div>
+    <div data-dojo-attach-point="containerNode">
+        <div data-dojo-type="dijit/TitlePane" data-dojo-props="title:'查询条件'">
+            <div id="${id}_toolbar" data-dojo-type="dijit/Toolbar" data-dojo-attach-point="toolbar">
+                <button data-dojo-type="dijit/form/Button" data-dojo-attach-point="queryButton">查询</button>
+            </div>
+            <div>
+                <label for="${id}_contractId">合同号</label>
+                <input data-dojo-type="dijit/form/TextBox" id="${id}_contractId" name="contractId">
+
+                <label for="${id}_contractOperator">经办人</label>
+                <input data-dojo-type="dijit/form/ComboBox" id="${id}_contractOperator" name="contractOperator"
+                       data-dojo-attach-point="operatorComboBox">
+                <!--
+                data-dojo-props="store:this.operatorStore,searchAttr:'name'">
+    -->
+                <label for="${id}_contractMaterial">交付物</label>
+                <input data-dojo-type="dijit/form/TextBox" id="${id}_contractMaterial" type="text"
+                       name="contractMaterial">
+
+                <input data-dojo-type="dijit/form/CheckBox" id="${id}_contractClosed" name="contractClosed">
+                <label for="${id}_contractClosed">包含已关闭的合同</label>
+
+            </div>
+
+        </div>
+
+        <div data-dojo-type="dijit/TitlePane" data-dojo-props="title:'合同列表'">
+            <!--合同相关的操作工具栏 -->
+            <div data-dojo-type="dijit/Toolbar" data-dojo-attach-point="contractToolbar">
+                <button data-dojo-type="dijit/form/Button" data-dojo-attach-point="closeContractButton">关闭合同
+                </button>
+                <button data-dojo-type="dijit/form/Button" data-dojo-attach-point="createContractButton"
+                        data-dojo-attach-event="click:_createContract"
+                        >新建合同
+                </button>
+                <button data-dojo-type="dijit/form/Button">登记票据</button>
+                <button data-dojo-type="dijit/form/Button">登记签报</button>
+                <button data-dojo-type="dijit/form/Button">登记目标成本</button>
+                <button data-dojo-type="dijit/form/Button">恢复合同</button>
+            </div>
+            <!--
+               <table data-dojo-type="dojox/grid/DataGrid" data-dojo-props="store: ${declaredClass}.${id}.myStore"
+                      style="height: 20em">
+               -->
+            <table data-dojo-type="dojox/grid/DataGrid" data-dojo-attach-point="contractListGrid"
+                   data-dojo-props="selectionMode:'single',columnReordering:true,store:this.contractListStore,autoHeight: true"
+                   style="height: 20em">
+                <colgroup span="4" noscroll="true"></colgroup>
+                <colgroup span="7"></colgroup>
+                <thead>
+                <tr>
+                    <th field="id" width="100px">合同号</th>
+                    <th field="suppiler">供应商</th>
+                    <th field="deliveryMaterial" width="200px">交付物</th>
+                    <th field="operator">经办人</th>
+                    <th field="arrviedId">档案号</th>
+                    <th field="registerDate" cellType="dojox.grid.cells.DateTextBox">登记日期</th>
+                    <th field="amount">金额</th>
+                    <th field="ticketAmount">开票金额</th>
+                    <th field="financeAmount">签报金额</th>
+                    <th field="paymentAmount">已付款金额</th>
+                    <th field="status">状态</th>
+                </tr>
+                </thead>
+
+            </table>
+
+            <!-- for auto generator datagrid -->
+            <!--
+        <div style="width: 100%">
+            <div data-dojo-attach-point="contractListGridNode">
+
+            </div>
+        </div>
+        -->
+        </div>
+
+        <div data-dojo-type="dijit/TitlePane" data-dojo-props="title:'合同执行情况'">
+            <div data-dojo-type="dijit/layout/TabContainer" style="height: 30em;">
+                <table data-dojo-type="dojox/grid/DataGrid"
+                       data-dojo-props="columnReordering:true,store:this.contractListStore,title:'号船到货情况'"
+                       data-dojo-attach-point="deliveryMaterialInfoGrid">
+                    <thead>
+                    <tr>
+                        <th field ="id" width="20%">编码</th>
+                        <th field ="deliveryMaterial" width="20%">交付物</th>
+                        <th field ="description" width="20%" >描述</th>
+                        <th field ="contractQuantity" width="10%" >合同数量</th>
+                        <th field ="shipNo" width="10%" >号船</th>
+                        <th field ="deliveryQuantity"  width="10%">到货数量</th>
+                        <th field ="_item" width="10%" >差异数量</th>
+                    </tr>
+                    </thead>
+                </table>
+
+                <table data-dojo-type="dojox/grid/DataGrid" data-dojo-attach-point="ticketInfoGrid"
+                       data-dojo-props="columnReordering:true,store:this.contractListStore,title:'票据情况'"
+                        >
+                    <thead>
+                    <tr>
+                        <th field="id" width="100px">发票号</th>
+                        <th field="registerDate">开票日期</th>
+                        <th field="ticketAmount">开票金额</th>
+                        <th field="inPaymentProcess" cellType="dojox.grid.cells.Bool">是否办理签报</th>
+                        <th field="isToFinance" cellType="dojox.grid.cells.Bool">是否送财务</th>
+                    </tr>
+                    </thead>
+                </table>
+                <table data-dojo-type="dojox/grid/DataGrid" data-dojo-attach-point="financeInfoGrid"
+                       data-dojo-props="columnReordering:true,store:this.contractListStore,title:'签报办理情况'"
+                        >
+                    <thead>
+                    <tr>
+                        <th field="id" width="100px">签报办理日期</th>
+                        <th field="paymentCondition">支付条件</th>
+                        <th field="ticketAmount">支付金额</th>
+                        <th field="description" >描述</th>
+                        <th field="isPayment" cellType="dojox.grid.cells.Bool">是否支付</th>
+                    </tr>
+                    </thead>
+                </table>
+                <table data-dojo-type="dojox/grid/DataGrid" data-dojo-attach-point="targetCostInfoGrid"
+                       data-dojo-props="columnReordering:true,store:this.contractListStore,title:'目标成本'"
+                        >
+                    <thead>
+                    <tr>
+                        <th field="shipNo" width="100px">号船</th>
+                        <th field="aShipAmount">单船金额</th>
+                        <th field="costNo">成本代码</th>
+                        <th field="costAmount">成本金额</th>
+                        <th field="_item">差异(单船-目标)</th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+
+</div>
