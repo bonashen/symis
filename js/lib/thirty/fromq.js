@@ -143,11 +143,12 @@
 
             fnBody.push(
                 []
-                    .concat("with(this){\n")
+                    //.concat("with(this){\n")
                     .concat("'use strict';\n")
                     .concat("return ")
                     .concat(codeBody)
-                    .concat("\n};")
+                    //.concat("\n}")
+                    .concat(";")
                     .join(""));
             return buildfn(fnBody, cacheName);
         },
@@ -618,12 +619,22 @@
         where: function (/*Function|Lambda*/clause) {
             clause = clauseConverter(clause, null, function () {
                 return true
-            }).bind(this.letvar);
+            });
 
-            var newArray = [], it;
+            var newArray = [], it, letvar = this.letvar, items = this.items;
             // The clause was passed in as a Method that return a Boolean
+            //for (var i = 0, l = items.length; i < l; ++i) {
+            //    it = clause.apply(letvar,[items[i], i]);
+            //    if (it === true) {
+            //        newArray[newArray.length] = items[i];
+            //    }
+            //}
+            //
+            //return fromq(this, newArray);
+
+
             this.each(function (item, index) {
-                it = clause(item, index);
+                it = clause.call(this, item, index);
                 if (it === true) {
                     newArray[newArray.length] = item;
                 }
@@ -1054,14 +1065,12 @@
             callback = _lambdaUtils.convert(callback, true);
             var
                 items = this.items, letvar = this.letvar, i, l;
-            callback = callback.bind(letvar);
             if (backwards) {
                 for (i = items.length; i >= 0; --i)
-                    if (callback(items[i], i))break;
+                    if (callback.call(letvar, items[i], i))break;
             }
             else for (i = 0, l = items.length; i < l; ++i) {
-                //if (callback(items[i], i, letvar))break;
-                if (callback(items[i], i))break;
+                if (callback.call(letvar, items[i], i))break;
             }
             return this;
 
@@ -1405,7 +1414,7 @@
         // | fromq("1,2,3").let(2).where("(o,i,v)=>o>v");
         let: function (value) {
             //if ("Function,Object".indexOf(getClass(value))>-1)
-                this.letvar = value || {};
+            this.letvar = value || {};
             return this;
         }
     }
