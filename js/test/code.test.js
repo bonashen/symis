@@ -661,4 +661,30 @@ require(['thirty/fromq', 'thirty/perf', 'thirty/logger'], function (fromq, testT
 });
 
 
-//====================
+//====================compare sbuilder && string++ =================================
+require(["thirty/sbuilder",'thirty/perf', 'thirty/logger'], function (sbuilder, testTime, Logger){
+
+    var logger = Logger("StringBuilder  Test");
+    var loop = function(callback){
+        var l=100*100*10;
+        for(var i=0;i<l;i++)callback(i);
+
+    };
+    testTime(function () {
+        var sb = sbuilder();
+        loop(function(i){
+            sb.append(i);
+        });
+        return sb.toString(",");
+    }, "StringBuilder", logger);
+    testTime(function () {
+        var sb = "";
+        loop(function(i){
+            sb+=i+",";
+        });
+        return sb;
+    }, "String++", logger);
+    logger.flush();
+});
+
+//===================
