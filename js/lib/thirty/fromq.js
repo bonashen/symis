@@ -68,7 +68,7 @@
         dppiUtils = {     //dppiUtils.invoking(callee,clause,[]);
             getFunctionArgumentList: function (fn) {
                 this.cache = this.cache || fromq(dppiCache);//[{method:fn,args:method.arguments,argsCount:method.arguments.length}]
-                var ret = this.cache.let(fn).where("(o,i)=>o.method===this").first();
+                var ret = this.cache.let(fn).where("(o,i,v)=>o.method===v").first();
                 if (ret)return ret.args;
                 if (isFunction(fn)) {
                     reFunctionArgumentList.lastIndex = 0;
@@ -143,11 +143,9 @@
 
             fnBody.push(
                 []
-                    //.concat("with(this){\n")
                     .concat("'use strict';\n")
                     .concat("return ")
                     .concat(codeBody)
-                    //.concat("\n}")
                     .concat(";")
                     .join(""));
             return buildfn(fnBody, cacheName);
@@ -286,10 +284,10 @@
                 var ret = [];
                 distinctClause = keyValueClauseConverter(distinctClause);
                 fromq(it).let(dict).distinct(distinctClause.right, true)
-                    .each("(o,i)=>this[o]=true");
+                    .each("(o,i,v)=>v[o]=true");
                 _this.each(
-                    function (item, index) {
-                        if (notIn ^ dict[distinctClause.left.apply(this, [item, index])]) {
+                    function (item, index, letvar) {
+                        if (notIn ^ dict[distinctClause.left(item, index, letvar)]) {
                             ret[ret.length] = item;
                         }
                     }
@@ -309,8 +307,8 @@
                     }
                 }
                 var ret = -1;
-                this.each(function (item, index) {
-                    if (clause.apply(this, [item, index])) {
+                this.each(function (item, index, letvar) {
+                    if (clause(item, index, letvar)) {
                         ret = index;
                         return true;
                     }
@@ -620,21 +618,10 @@
             clause = clauseConverter(clause, null, function () {
                 return true
             });
-
-            var newArray = [], it, letvar = this.letvar, items = this.items;
+            var newArray = [], it;
             // The clause was passed in as a Method that return a Boolean
-            //for (var i = 0, l = items.length; i < l; ++i) {
-            //    it = clause.apply(letvar,[items[i], i]);
-            //    if (it === true) {
-            //        newArray[newArray.length] = items[i];
-            //    }
-            //}
-            //
-            //return fromq(this, newArray);
-
-
-            this.each(function (item, index) {
-                it = clause.call(this, item, index);
+            this.each(function (item, index, letvar) {
+                it = clause(item, index, letvar);
                 if (it === true) {
                     newArray[newArray.length] = item;
                 }
@@ -663,8 +650,8 @@
             }, "o=>o");
 
             var newArray = [];
-            this.each(function (item, index) {
-                item = clause.call(this, item, index);
+            this.each(function (item, index, letvar) {
+                item = clause(item, index, letvar);
                 if (item !== null)
                     newArray[newArray.length] = item;
             });
@@ -705,15 +692,13 @@
             };
 
             var letvar = this.letvar;
-            clause = clause.bind(letvar);
-
             var getComparefn = function (customCompare) {
                 return customCompare == false ? function (a, b) {
-                    var x = clause(a);
-                    var y = clause(b);
+                    var x = clause(a, letvar);
+                    var y = clause(b, letvar);
                     return ((x < y) ? -1 : ((x > y) ? 1 : 0));
                 } : function (a, b) {
-                    return clause(a, b);
+                    return clause(a, b, letvar);
                 }
             };
             var myCompare = getComparefn(customCompare);
@@ -754,14 +739,13 @@
                 return item;
             };
             var letvar = this.letvar;
-            clause = clause.bind(letvar);
             return fromq(this,
                 tempArray.sort(customCompare == false ? function (a, b) {
-                    var x = clause(b);
-                    var y = clause(a);
+                    var x = clause(b, letvar);
+                    var y = clause(a, letvar);
                     return ((x < y) ? -1 : ((x > y) ? 1 : 0));
                 } : function (a, b) {
-                    return clause(a, b);
+                    return clause(a, b, letvar);
                 })
             );
         },
@@ -785,8 +769,8 @@
             }, null);
 
             var r = [];
-            this.each(function (item, index) {
-                r[r.length] = clause.call(this, item, index);
+            this.each(function (item, index, letvar) {
+                r[r.length] = clause(item, index, letvar);
             });
             return fromq(this, r);
         },
@@ -821,8 +805,8 @@
             var d_item;
             var dict = {};
             var retVal = [];
-            this.each(function (item, index) {
-                d_item = clause.call(this, item, index);
+            this.each(function (item, index, letvar) {
+                d_item = clause(item, index, letvar);
                 if (dict[d_item] == null) {
                     dict[d_item] = true;
                     retVal[retVal.length] = distinctValue ? d_item : item;
@@ -844,8 +828,8 @@
             var
                 ret = false;
             if (clause)
-                this.each(function (item, index) {
-                    ret = clause.call(this, item, index);
+                this.each(function (item, index, letvar) {
+                    ret = clause(item, index, letvar);
                     return ret;
                 });
             else
@@ -866,8 +850,8 @@
             clause = _lambdaUtils.convert(clause);
             var ret = false;
             if (clause && !this.isEmpty())
-                this.each(function (item, index) {
-                    ret = !clause.call(this, item, index);
+                this.each(function (item, index, letvar) {
+                    ret = !clause(item, index, letvar);
                     return ret;
                 });
             else ret = this.isEmpty();
@@ -963,8 +947,8 @@
             });
 
             leftq.each(
-                function (item, index) {
-                    if (map[clause.call(this, item, index)])
+                function (item, index, letvar) {
+                    if (map[clause(item, index, letvar)])
                         result[result.length] = item;
                 }
             );
@@ -1028,8 +1012,8 @@
                     map[item] = true;
                 });
             unionq.each(
-                function (item, index) {
-                    if (map[clause.apply(this, item, index)] !== true)
+                function (item, index, letvar) {
+                    if (map[clause(item, index, letvar)] !== true)
                         result[result.length] = item;
                 }
             );
@@ -1066,11 +1050,10 @@
             var
                 items = this.items, letvar = this.letvar, i, l;
             if (backwards) {
-                for (i = items.length; i >= 0; --i)
-                    if (callback.call(letvar, items[i], i))break;
+                for (i = items.length; i >= 0; --i)if (callback(items[i], i, letvar))break;
             }
             else for (i = 0, l = items.length; i < l; ++i) {
-                if (callback.call(letvar, items[i], i))break;
+                if (callback(items[i], i, letvar))break;
             }
             return this;
 
@@ -1152,11 +1135,9 @@
                 ret.push(".join(\",\")");
                 return ret.join("");
             }, "o=>o");
-
-            clause = clause.bind(this.letvar);
             this.each(
-                function (item, index) {
-                    var gLabel = clause(item, index);
+                function (item, index, letvar) {
+                    var gLabel = clause(item, index, letvar);
                     gLabel = cache[gLabel] = cache[gLabel] || [];
                     gLabel[gLabel.length] = item;
                 }
@@ -1195,11 +1176,9 @@
                 }
                 return clause;
             })(clause);
-
-            clause = clause.bind(this.letvar);
             var ret = 0;
-            this.each(clause !== undefined ? function (item, index) {
-                    ret += clause(item, index);//support sum function extend args
+            this.each(clause !== undefined ? function (item, index, letvar) {
+                    ret += clause(item, index, letvar);//support sum function extend args
                 } :
                     function (item) {
                         if (isString(item) && isFloat(item))//process string value is float.
@@ -1343,16 +1322,13 @@
                 return a.toString() === b.toString();
             });
 
-            selector = selector.bind(this.letvar);
-            comparer = comparer.bind(this.letvar);
-
             return leftq.select(
-                function (leftItem) {
+                function (leftItem, index, letvar) {
                     var value = rightq.first(function (rightItem) {
-                        return comparer(leftItem, rightItem);
+                        return comparer(leftItem, rightItem, letvar);
                     });
                     if (value || type.isLeft())
-                        return selector(leftItem, value || {});
+                        return selector(leftItem, value || {}, letvar);
                 });
         },
 //example:
@@ -1398,11 +1374,9 @@
                     return a === b;
                 });
 
-                compareClause = compareClause.bind(this.letvar);
-
                 this.each(function (item, index, letvar) {
                     //ret = dppiUtils.invoking(callee, compareClause, [item, it.elementAt(index)]);
-                    ret = compareClause(item, it.elementAt(index));
+                    ret = compareClause(item, it.elementAt(index), letvar);
                     if (!ret) return true;
                 });
             }
@@ -1413,7 +1387,6 @@
         // |eg:
         // | fromq("1,2,3").let(2).where("(o,i,v)=>o>v");
         let: function (value) {
-            //if ("Function,Object".indexOf(getClass(value))>-1)
             this.letvar = value || {};
             return this;
         }
