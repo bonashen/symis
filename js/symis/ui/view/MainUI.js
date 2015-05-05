@@ -134,7 +134,8 @@ define(
                         model.getRoot(function (item) {
                             root = item;
                         });
-                        var checkCode = fromq("(o,cmd,q)=>o['cmdCode']?!q(o['cmdCode']).let(cmd).where('(o,i,cmd)=>o===cmd').isEmpty():false");
+                        //var checkCode = fromq("(o,cmd,q)=>o['cmdCode']?!q(o['cmdCode']).let(cmd).where('(o,i,cmd)=>o===cmd').isEmpty():false");
+                        var checkCode = fromq("(o,cmd,q)=>o['cmdCode']&& q(o['cmdCode']).let(cmd).contains('o=>o===this')");
                         var fetch = function (parent) {
                             var ret = null;
                             model.getChildren(parent, function (items) {

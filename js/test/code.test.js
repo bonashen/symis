@@ -70,13 +70,15 @@ require(['thirty/fromq'], function (fromq) {
     ];
     var a2 = [
         {id: 1, age: 38},
-        {id: 2, age: 5}
+        {id: 3, age: 5}
     ];
 
     fromq(a1).select("(o,i,a2)=>{a1:o,a2:a2.where('(o,i,n)=>o.id==n.id',o).first()}",
         fromq(a2)).each('o=>console.log(o)');
 
     fromq(a1).leftJoin(a2, "id").each('o=>console.log(o)');
+
+    fromq(a1).innerJoin(a2, "id").each('o=>console.log(o)');
 
 });
 
@@ -104,8 +106,8 @@ require(['thirty/fromq'], function (fromq) {
         console.log(item);
     }).groupBy('o=>isNaN(parseInt(o.value))?\'not int\':\'int\'').each(function (g, i) {
 
-        if (!g.where('o=>o=="int"').isEmpty()) {
-            console.log(g.toArray().join(","), '\tcount: ', i.count(),
+        if (g=="int"){
+            console.log(g, '\tcount: ', i.size(),
                 '\tsum: ', i.sum('a=>parseInt(a.value)'), '\tavg:', i.avg('o=>parseInt(o.value)'));
 
             console.log("items:");
@@ -115,7 +117,7 @@ require(['thirty/fromq'], function (fromq) {
                 }
             );
         } else {
-            console.log(g.toArray().join(","), '\tcount: ', i.count());
+            console.log(g, '\tcount: ', i.size());
             console.log("items:");
             i.each(
                 function (item) {
@@ -199,181 +201,6 @@ require(['thirty/fromq'], function (from) {
     }
 );
 
-require(['thirty/fromq'], function (linq) {
-    console.dir(linq);
-    var data = [1, 4, 3, 2, 5];
-    var i = linq(data).any(function (item) {
-        return item < 5
-    });
-    console.log('data values has lq 5:', i);
-    i = linq(data).count(function (item) {
-        return item < 5
-    });
-    console.log('data values has lq 5 count:', i);
-    data = linq(data).orderBy(function (item) {
-        return item
-    }).toArray();
-    console.log('order by:', data);
-    data = linq(data).orderByDescending(function (item) {
-        return item
-    }).toArray();
-    console.log('orderByDescending:', data);
-    data = linq(data).select(function (item, index) {
-        return {
-            value: item,
-            id: index
-        };
-    }).toArray();
-    console.log('select:', data);
-    linq(data).select(function (item) {
-        if (item.value < 5) return {
-            value: item.value,
-            id: item.id
-        };
-    }).each(function (item) {
-            console.log('id=' + item.id, item);
-        }
-    );
-});
-
-var isString = function (it) {
-
-    return (typeof it == "string" || it instanceof String);
-
-};
-
-require(['thirty/fromq', 'thirty/perf', 'thirty/logger'], function (from, testTime, Logger) {
-    var len = 100000;
-    var logger = Logger("JSLINQ");
-    testTime(function () {
-        //console.dir(linq);
-        var data = [];
-        testTime(function () {
-            for (var i = 0; i < len; i++) data[i] = Math.round(Math.random() * len, 0);
-        }, 'init array datas:' + len, logger);
-        /*
-         testTime(function () {
-         var dest = [];
-         for (var i = 0; i < data.length; i++) {
-         dest[dest.length] = data[i];
-         }
-         }, 'array copy', logger);
-         */
-        var i = 0;
-        testTime(function () {
-            i = from(data).any(function (item) {
-                return item < 5
-            });
-        }, 'jslinq.any', logger);
-        //logger.log('data values has lq 5:', i);
-        testTime(function () {
-            i = from(data).count(function (item) {
-                return item < 5
-            });
-            //logger.log('data values has lq 5 count:', i);
-        }, 'jslinq.count', logger);
-        testTime(function () {
-            data = from(data).orderBy(function (item) {
-                return item
-            }).toArray();
-        }, 'jslinq.orderBy', logger);
-        //console.log('order by:', data);
-        data = testTime(function () {
-            return from(data).orderByDescending(function (item) {
-                return item
-            });
-        }, 'jslinq.orderByDescending', logger).toArray();
-        //console.log('orderByDescending:', data);
-        data = testTime(function () {
-            return from(data).select(function (item, index) {
-                return {
-                    value: item,
-                    id: index
-                };
-            })
-        }, 'jslinq.select', logger).toArray();
-        //console.log('select:', data);
-        testTime(function () {
-            return from(data).select(function (item) {
-                if (item.value < 5) return {
-                    value: item.value,
-                    id: item.id
-                };
-            })
-        }, 'jslinq.select', logger).takeRange(len - i, len).each(function (item) {
-                logger.log('id=' + item.id, item);
-            }
-        );
-    }, 'totalTime', logger);
-    logger.flush();
-});
-
-require(['thirty/fromq', 'thirty/perf', 'thirty/logger'], function (from, testTime, Logger) {
-    var len = 100000;
-    var logger = Logger("JSLINQ,LAMBDA");
-    testTime(function () {
-        //console.dir(linq);
-        var data = [];
-        testTime(function () {
-            for (var i = 0; i < len; i++) data[i] = Math.round(Math.random() * len, 0);
-        }, 'init array datas:' + len, logger);
-        /*
-         testTime(function () {
-         var dest = [];
-         for (var i = 0; i < data.length; i++) {
-         dest[dest.length] = data[i];
-         }
-         }, 'array copy', logger);
-         */
-        var i = 0;
-        testTime(function () {
-            i = from(data).any(/*function (item) {
-             return item < 5
-             }*/"o=>o<5");
-        }, 'jslinq.any', logger);
-        //logger.log('data values has lq 5:', i);
-        testTime(function () {
-            i = from(data).count(/*function (item) {
-             return item < 5
-             }*/"o=>o<5");
-            //logger.log('data values has lq 5 count:', i);
-        }, 'jslinq.count', logger);
-        testTime(function () {
-            data = from(data).orderBy(/*function (item) {
-             return item
-             }*/"o=>o").toArray();
-        }, 'jslinq.orderBy', logger);
-        //console.log('order by:', data);
-        data = testTime(function () {
-            return from(data).orderByDescending(/*function (item) {
-             return item
-             }*/"o=>o");
-        }, 'jslinq.orderByDescending', logger).toArray();
-        //console.log('orderByDescending:', data);
-        data = testTime(function () {
-            return from(data).select(/*function (item, index) {
-             return {
-             value: item,
-             id: index
-             };
-             }*/"(o,i)=>ret={value:o,id:i}")
-        }, 'jslinq.select', logger).toArray();
-        //console.log('select:', data);
-        testTime(function () {
-            return from(data).select(/*function (item) {
-             if (item.value < 5) return {
-             value: item.value,
-             id: item.id
-             };
-             }*/"(o,i)=>ret={value:o.value,id:o.id}")
-        }, 'jslinq.select', logger).takeRange(len - i, len).each(function (item) {
-                logger.log('id=' + item.id, item);
-            }
-        );
-    }, 'totalTime', logger);
-    logger.flush();
-});
-
 
 //==========================
 require(['thirty/fromq',
@@ -435,7 +262,7 @@ require(['thirty/fromq',
 
  */
 require(['thirty/fromq',
-    'dojo/json'], function (from, json) {
+    'dojo/json'], function (fromq, json) {
     var data = [
         {
             name: 'bona',
@@ -469,18 +296,19 @@ require(['thirty/fromq',
         }
     ];
     var remail = /^([\w-_]+(?:\.[\w-_]+)*)@((?:[a-z0-9]+(?:-[a-zA-Z0-9]+)*)+\.[a-z]{2,6})$/i;
-    var gret = from(data).orderBy('age').groupBy(function (item) {
+    var gret = fromq(data).orderBy('age').groupBy(function (item) {
         var a = remail.exec(item.email);
         //console.log(a);
         if (a.length > 2) return [a[2], item.age >= 18 ? "age>=18" : "age<18"];
         else return item.email;
     });
     //console.log(gret);
+
     gret = gret.select(function (g, i) {
-        var ages = from(i).select('age');
+        var ages = i.select('age');
         //console.log(ages.toArray());
         var ret = {
-            //groups: groups,
+            group: g,
             maxAge: ages.max(),
             minAge: ages.min(),
             sumAge: ages.sum(),
@@ -488,9 +316,7 @@ require(['thirty/fromq',
             count: ages.count(),
             items: i.toArray()
         };
-        from(g).each(function (group, index) {
-            ret['group' + index] = group;
-        });
+
         //delete ret.groups;
         return ret;
     });
@@ -500,6 +326,7 @@ require(['thirty/fromq',
 
     console.log(json.stringify(gret.toArray()));
 });
+
 //==============================================
 require(['thirty/fromq'], function (fromq) {
     var data1 = [
@@ -564,12 +391,12 @@ require(['thirty/fromq'], function (fromq) {
 
 require(['thirty/fromq', 'thirty/perf', 'thirty/logger'], function (from, testTime, Logger) {
 
-    var a1 = [1, 2, 3, 4, 5], a2 = [1, 2, 5, 6, 8];
+    var a1 = [0,1, 2, 3, 4, 5], a2 = [0,1, 2, 5, 6, 8];
 
     var len = 100000;
     for (var i = 0; i < len; i++) {
-        //a1[i]=Math.round(Math.random()*len,0);
-        a2[i] = Math.round(Math.random() * len, 0);
+        a1[i]=Math.round(Math.random()*len,0);
+        // a2[i] = Math.round(Math.random() * len);
 
     }
 
@@ -585,28 +412,26 @@ require(['thirty/fromq', 'thirty/perf', 'thirty/logger'], function (from, testTi
         return f.union(a2, "a=>a")
     }, "union", logger);
 
-    console.log("\t union count:", unionq.count());
-
-    //unionq.each(fn);
+    console.log("\t union count:", unionq.size());
 
     var intersectq = testTime(function () {
         return f.intersect(a2, "k=>k")
     }, "intersect", logger);
 
-    console.log("\t intersect count:", intersectq.count());
-
-    //intersectq.each(fn);
+    console.log("\t intersect count:", intersectq.size());
 
     var exceptq = testTime(function () {
         return f.except(a2, "i=>i")
     }, "except", logger);
 
-    console.log("\t except count:", exceptq.count());
-    //exceptq.each(fn);
+    console.log("\t except count:", exceptq.size());
 
+    if(exceptq.size()+intersectq.size()!==unionq.size())
+    {  console.log("error");
+        intersectq.in(exceptq).each(fn);
+    }
     logger.flush();
 });
-
 
 //================================================
 
@@ -671,35 +496,6 @@ require(['thirty/fromq', "thirty/lambda"], function (fq, _l) {
 
 //==============================================
 
-var option = function (it) {
-
-    return new option.fn.init(it);
-};
-
-option.fn = option.prototype = {
-    init: function (it) {
-        this.data = it;
-        this.generateMethod();
-    },
-    get: function (key) {
-        return this.data[key];
-    },
-    generateMethod: function () {
-        var data = this.data;
-        for (var key in data) {
-            key = key.replace(/(\w)/, function (v) {
-                return v.toUpperCase()
-            });
-            this['is' + key] = function () {
-
-            };
-        }
-    }
-
-};
-
-option.fn.init.prototype = option.fn;
-
 
 //==============================================
 require(['thirty/fromq', 'thirty/perf', 'thirty/logger'], function (fromq, testTime, Logger) {
@@ -742,7 +538,7 @@ require(['thirty/fromq', 'thirty/perf', 'thirty/logger'], function (fromq, testT
 
     testTime(function () {
         var m = {value: 0};
-        fq.let(m).each("(o,i,v)=>v.value=v.value-o<0?o:v.value");
+        fq.let(m).each("o=>this.value=this.value-o<0?o:this.value");
         console.log(m.value);
     }, "fromq.each==>lambda", logger);
 
@@ -816,6 +612,10 @@ require(['thirty/fromq', 'thirty/perf', 'thirty/logger'], function (fromq, testT
             }, []);
         });
     }, "fromq.utils.invoking", logger);
+
+    testTime(function () {
+        fq.let({value:10}).each("(o,i,v)=>this.value=(v*o*this.value)",false,4);
+    }, "fromq.utils.invokeProxy", logger);
 
     testTime(function () {
         fq.equal(a1);

@@ -173,7 +173,7 @@ define(
 
                     fromq(grid.layout.cells)
                         .let("registerDate")
-                        .where("(o,i,f)=>o.field===f")
+                        .where("o=>o.field===this")
                         .each(function (cell) {
                             lang.mixin(cell, {
                                 editable: true,
@@ -197,7 +197,7 @@ define(
 
                     fromq(grid.layout.cells)
                         .let('status')
-                        .where("(o,i,f)=>o.field===f")
+                        .where("o=>o.field===this")
                         .each(function (cell) {
 
                             lang.mixin(cell, {
@@ -262,7 +262,7 @@ define(
                     "use strict";
                     fromq(this.deliveryMaterialInfoGrid.layout.cells)
                         .let("_item")
-                        .where("(o,i,f)=>o.field===f" )
+                        .where("o=>o.field===this" )
                         .each(function (cell) {
                             cell.field = '';
                             cell.get = function (rowIndex, item) {
@@ -279,7 +279,7 @@ define(
                     var cellType = 'dojox.grid.cells.Bool';
                     fromq(this.ticketInfoGrid.layout.cells)
                         .let(cellType)
-                        .where("(o,i,ct)=>o.declaredClass==ct").each(function (item) {
+                        .where("o=>o.declaredClass==this").each(function (item) {
                             item.formatter = function () {
                                 return '<a href="http://www.bonashen.com">ok</a>';
                             };
@@ -288,7 +288,7 @@ define(
                 initTargetCostInfoGrid: function () {
                     fromq(this.targetCostInfoGrid.layout.cells)
                         .let( "_item")
-                        .where("(o,i,f)=>o.field===f")
+                        .where("o=>o.field===this")
                         .each(function (cell) {
                             //console.log(cell);
                             cell.field = '';
