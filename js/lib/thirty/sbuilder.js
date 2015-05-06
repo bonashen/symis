@@ -12,6 +12,10 @@ define(null, [], function () {
         return new StringBuilder.fn.init(value);
     };
 
+    var isArrayLike = function (it) {
+        return it && it['length'] !== undefined;
+    };
+
     StringBuilder.fn = StringBuilder.prototype = {
         init: function (value) {
             this.strings = new Array("");
@@ -19,6 +23,11 @@ define(null, [], function () {
         },
         // Appends the given value to the end of this instance.
         append: function (value) {
+            if(isArrayLike(value)){
+                for (var i = 0, l = value.length; i < l; i++)
+                    this.strings[this.strings.length] = value[i];
+                return this;
+            }
             if (value) {
                 this.strings.push(value);
             }
@@ -33,11 +42,11 @@ define(null, [], function () {
 
         // Converts this instance to a String.
         toString: function (/*String*/separator) {
-            return this.strings.join(separator||"");
+            return this.strings.join(separator || "");
         },
         toArray: function (/*Array*/it) {
-            if (it && (it instanceof Array||typeof(it)=='array'))
-                for (var i = 0,l=this.strings.length; i <l ; i++)
+            if (isArrayLike(it))
+                for (var i = 0, l = this.strings.length; i < l; i++)
                     it[it.length] = this.strings[i];
             return this.strings;
         }
