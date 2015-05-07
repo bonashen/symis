@@ -106,7 +106,7 @@ require(['thirty/fromq'], function (fromq) {
         console.log(item);
     }).groupBy('o=>isNaN(parseInt(o.value))?\'not int\':\'int\'').each(function (g, i) {
 
-        if (g=="int"){
+        if (g == "int") {
             console.log(g, '\tcount: ', i.size(),
                 '\tsum: ', i.sum('a=>parseInt(a.value)'), '\tavg:', i.avg('o=>parseInt(o.value)'));
 
@@ -391,11 +391,11 @@ require(['thirty/fromq'], function (fromq) {
 
 require(['thirty/fromq', 'thirty/perf', 'thirty/logger'], function (fromq, testTime, Logger) {
 
-    var a1 = [0,1, 2, 3, 4, 5], a2 = [0,1, 2, 5, 6, 8];
+    var a1 = [0, 1, 2, 3, 4, 5], a2 = [0, 1, 2, 5, 6, 8];
 
-    var len = 100*100*10;
+    var len = 100 * 100 * 10;
     for (var i = 0; i < len; i++) {
-        a1[i]=Math.round(Math.random()*len,0);
+        a1[i] = Math.round(Math.random() * len, 0);
         // a2[i] = Math.round(Math.random() * len);
     }
     var f = fromq(a1);
@@ -422,8 +422,8 @@ require(['thirty/fromq', 'thirty/perf', 'thirty/logger'], function (fromq, testT
 
     console.log("\t except count:", exceptq.size());
 
-    if(exceptq.size()+intersectq.size()!==unionq.size())
-    {  console.log("error");
+    if (exceptq.size() + intersectq.size() !== unionq.size()) {
+        console.log("error");
         intersectq.in(exceptq).each(println);
     }
     logger.flush();
@@ -572,7 +572,7 @@ require(['thirty/fromq', 'thirty/perf', 'thirty/logger'], function (fromq, testT
     }, "fromq.utils.invoking", logger);
 
     testTime(function () {
-        fq.let({value:10}).each("(o,i,v)=>this.value=(v*o*this.value)",false,4);
+        fq.let({value: 10}).each("(o,i,v)=>this.value=(v*o*this.value)", false, 4);
     }, "fromq.utils.invokeProxy", logger);
 
     testTime(function () {
@@ -620,25 +620,25 @@ require(['thirty/fromq', 'thirty/perf', 'thirty/logger'], function (fromq, testT
 
 
 //====================compare sbuilder && string++ =================================
-require(["thirty/sbuilder",'thirty/perf', 'thirty/logger'], function (sbuilder, testTime, Logger){
+require(["thirty/sbuilder", 'thirty/perf', 'thirty/logger'], function (sbuilder, testTime, Logger) {
 
     var logger = Logger("StringBuilder  Test");
-    var loop = function(callback){
-        var l=100*100*10;
-        for(var i=0;i<l;i++)callback(i);
+    var loop = function (callback) {
+        var l = 100 * 100 * 10;
+        for (var i = 0; i < l; i++)callback(i);
 
     };
     testTime(function () {
         var sb = sbuilder();
-        loop(function(i){
+        loop(function (i) {
             sb.append(i);
         });
         return sb.toString(",");
     }, "StringBuilder", logger);
     testTime(function () {
         var sb = "";
-        loop(function(i){
-            sb+=i+",";
+        loop(function (i) {
+            sb += i + ",";
         });
         return sb;
     }, "String++", logger);
@@ -646,3 +646,102 @@ require(["thirty/sbuilder",'thirty/perf', 'thirty/logger'], function (sbuilder, 
 });
 
 //===================
+
+(function () {
+    var reTrim = /(^\s*)|(\s*$)/g;
+
+    var reFunctionArgumentList = /^\s*function(?:\s+[^(\s]+)?\s*\(\s*([^)]*)\s*\)/;
+    var reComments = /\s*(\/\*[\s\S]*?\*\/)[\s\w,]+/g;
+
+    var arraySlice = function (it, start, end) {
+            var ret = [];
+            //if (!isArrayLike(it))return ret;
+            for (var i = start || 0, l = end ? (end > it.length ? it.length : end) : it.length; i < l; ++i)
+                ret[ret.length] = it[i];
+            return ret;
+        },
+        trim = function (str) {
+            reTrim.lastIndex = 0;
+            return str.replace(reTrim, '');
+        }
+        ,
+        makeKvo = function (keys, values) {
+            var ret = {};
+            for (var i = 0, l = keys.length; i < l; ++i) {
+                ret[keys[i]] = values[i];
+            }
+            return ret;
+        };
+
+    var cache = {};
+
+    var invokeUtils = {
+        //example:
+        // var caller = before(function( a , b){
+        //    b.apply(null,[4,5]);
+        //},function(args){
+        //    fnProxy(args,'b');
+        //});
+        before: function (fn, advice) {
+            var argsName = this.getFunctionArgumentList(fn);
+            for (var i = 0, l = argsName.length; i < l; ++i)
+                argsName[i] = trim(argsName[i]);
+            var args = {
+                set: function (attrName, value) {
+                    this.argsMap[attrName] = value;
+                },
+                get: function (attrName) {
+                    return this.argsMap[attrName];
+                }
+            };
+            return function () {
+                args.argsMap = makeKvo(argsName, arguments);
+                args.extArgs = arraySlice(arguments, argsName.length);
+                advice.call(this, args);
+                var invokeArgs = arraySlice(arguments);
+                for (var i = 0, l = argsName.length; i < l; ++i) {
+                    invokeArgs[i] = args.argsMap[argsName[i]];
+                }
+                return fn.apply(this, invokeArgs);
+            };
+        },
+        invokeProxy: function (args, name) {
+            if (args.extArgs.length == 0)return;
+            var fn = args.get(name);
+            var extArgs = args.extArgs;
+            var proxy = function () {
+                fn.apply(this, arraySlice(arguments).concat(extArgs));
+            };
+            args.set(name, proxy);
+        }
+        ,
+        getFunctionArgumentList: function (fn) {
+            reComments.lastIndex = 0;
+            var ret = cache[fn];
+            if (ret)return ret.args;
+            reFunctionArgumentList.lastIndex = 0;
+            ret = reFunctionArgumentList.exec(fn)[1];
+            if (ret.length == 0)ret = [];
+            else ret = ret.replace(reComments, function (value) {
+                return value.substr(value.indexOf("*/") + 2);
+            }).split(",");
+            cache[fn] = {method: fn, args: ret, argsCount: ret.length};
+            return ret;
+        }
+    };
+
+    //test
+
+    var fn = invokeUtils.before(function (a, b) {
+        b();
+        console.log(arguments);
+        console.log(b);
+    }, function (args) {
+        invokeUtils.invokeProxy(args, 'b')
+    });
+
+    fn(1, function () {
+        console.log(arguments);
+    }, 2, 3, 4);
+
+})();
