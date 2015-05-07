@@ -655,7 +655,6 @@ require(["thirty/sbuilder", 'thirty/perf', 'thirty/logger'], function (sbuilder,
 
     var arraySlice = function (it, start, end) {
             var ret = [];
-            //if (!isArrayLike(it))return ret;
             for (var i = start || 0, l = end ? (end > it.length ? it.length : end) : it.length; i < l; ++i)
                 ret[ret.length] = it[i];
             return ret;
@@ -663,8 +662,7 @@ require(["thirty/sbuilder", 'thirty/perf', 'thirty/logger'], function (sbuilder,
         trim = function (str) {
             reTrim.lastIndex = 0;
             return str.replace(reTrim, '');
-        }
-        ,
+        },
         makeKvo = function (keys, values) {
             var ret = {};
             for (var i = 0, l = keys.length; i < l; ++i) {
@@ -675,73 +673,92 @@ require(["thirty/sbuilder", 'thirty/perf', 'thirty/logger'], function (sbuilder,
 
     var cache = {};
 
-    var invokeUtils = {
-        //example:
-        // var caller = before(function( a , b){
-        //    b.apply(null,[4,5]);
-        //},function(args){
-        //    fnProxy(args,'b');
-        //});
-        before: function (fn, advice) {
-            var argsName = this.getFunctionArgumentList(fn);
-            for (var i = 0, l = argsName.length; i < l; ++i)
-                argsName[i] = trim(argsName[i]);
-            var args = {
-                set: function (attrName, value) {
-                    this.argsMap[attrName] = value;
-                },
-                get: function (attrName) {
-                    return this.argsMap[attrName];
-                }
-            };
-            return function () {
-                args.argsMap = makeKvo(argsName, arguments);
-                args.extArgs = arraySlice(arguments, argsName.length);
-                advice.call(this, args);
-                var invokeArgs = arraySlice(arguments);
-                for (var i = 0, l = argsName.length; i < l; ++i) {
-                    invokeArgs[i] = args.argsMap[argsName[i]];
-                }
-                return fn.apply(this, invokeArgs);
-            };
-        },
-        invokeProxy: function (args, name) {
-            if (args.extArgs.length == 0)return;
-            var fn = args.get(name);
-            var extArgs = args.extArgs;
-            var proxy = function () {
-                fn.apply(this, arraySlice(arguments).concat(extArgs));
-            };
-            args.set(name, proxy);
-        }
-        ,
-        getFunctionArgumentList: function (fn) {
-            reComments.lastIndex = 0;
-            var ret = cache[fn];
-            if (ret)return ret.args;
-            reFunctionArgumentList.lastIndex = 0;
-            ret = reFunctionArgumentList.exec(fn)[1];
-            if (ret.length == 0)ret = [];
-            else ret = ret.replace(reComments, function (value) {
-                return value.substr(value.indexOf("*/") + 2);
-            }).split(",");
-            cache[fn] = {method: fn, args: ret, argsCount: ret.length};
-            return ret;
+    var fnProxy = function (fn, advice) {
+        return fnProxy.proxy(fn, advice);
+    };
+
+    //example:
+    // var caller = before(function( a , b){
+    //    b.apply(null,[4,5]);
+    //},function(args){
+    //    fnProxy(args,'b');
+    //});
+    fnProxy.proxy = function (fn, advice) {
+        var argsName = fnProxy.getFunctionArgumentList(fn);
+        var args = {
+            set: function (attrName, value) {
+                this.argsMap[attrName] = value;
+            },
+            get: function (attrName) {
+                return this.argsMap[attrName];
+            },
+            argsName:argsName
+        };
+        return function () {
+            args.argsMap = makeKvo(argsName, arguments);
+            args.extArgs = arraySlice(arguments, argsName.length);
+            advice.call(this, args);
+            var invokeArgs = arraySlice(arguments);
+            for (var i = 0, l = argsName.length; i < l; ++i) {
+                invokeArgs[i] = args.argsMap[argsName[i]];
+            }
+            return fn.apply(this, invokeArgs);
+        };
+    };
+    fnProxy.invokeProxy = function (args, name) {
+        if (args.extArgs.length == 0)return;
+        var fn = args.get(name);
+        var extArgs = args.extArgs;
+        var proxy = function () {
+            fn.apply(this, arraySlice(arguments).concat(extArgs));
+        };
+        args.set(name, proxy);
+    };
+    fnProxy.getFunctionArgumentList = function (fn) {
+        reComments.lastIndex = 0;
+        var ret = cache[fn];
+        if (ret)return ret.args;
+        reFunctionArgumentList.lastIndex = 0;
+        ret = reFunctionArgumentList.exec(fn)[1];
+        if (ret.length == 0)ret = [];
+        else ret = ret.replace(reComments, function (value) {
+            return value.substr(value.indexOf("*/") + 2);
+        }).split(",");
+        for (var i = 0, l = ret.length; i < l; ++i)
+            ret[i] = trim(ret[i]);
+        cache[fn] = {method: fn, args: ret, argsCount: ret.length};
+        return ret;
+    };
+
+    fnProxy.injector = function(args,pool){
+        for(var key in args.argsMap){
+            if(args.get(key)==null){
+                args.set(key,pool[key]);
+            }
         }
     };
 
-    //test
+    //test1
 
-    var fn = invokeUtils.before(function (a, b) {
+    var fn = fnProxy(function (a, b) {
         b();
         console.log(arguments);
-        console.log(b);
     }, function (args) {
-        invokeUtils.invokeProxy(args, 'b')
+        fnProxy.invokeProxy(args, 'b')
     });
 
     fn(1, function () {
         console.log(arguments);
     }, 2, 3, 4);
 
+    var pool={b:function(){console.log(arguments);}};
+
+    fn= fnProxy(function (a, b) {
+        b();
+        console.log(arguments);
+    }, function (args) {
+        fnProxy.injector(args,pool);
+    });
+
+    fn();
 })();
