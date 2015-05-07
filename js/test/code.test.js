@@ -389,23 +389,19 @@ require(['thirty/fromq'], function (fromq) {
 });
 //=================================
 
-require(['thirty/fromq', 'thirty/perf', 'thirty/logger'], function (from, testTime, Logger) {
+require(['thirty/fromq', 'thirty/perf', 'thirty/logger'], function (fromq, testTime, Logger) {
 
     var a1 = [0,1, 2, 3, 4, 5], a2 = [0,1, 2, 5, 6, 8];
 
-    var len = 100000;
+    var len = 100*100*10;
     for (var i = 0; i < len; i++) {
         a1[i]=Math.round(Math.random()*len,0);
         // a2[i] = Math.round(Math.random() * len);
-
     }
-
-    var f = from(a1);
-
-    var fn = function (i) {
+    var f = fromq(a1);
+    var println = function (i) {
         console.log(i);
     };
-
     var logger = Logger("Collect Operator Test");
 
     var unionq = testTime(function () {
@@ -428,50 +424,12 @@ require(['thirty/fromq', 'thirty/perf', 'thirty/logger'], function (from, testTi
 
     if(exceptq.size()+intersectq.size()!==unionq.size())
     {  console.log("error");
-        intersectq.in(exceptq).each(fn);
+        intersectq.in(exceptq).each(println);
     }
     logger.flush();
 });
 
-//================================================
 
-require(["dijit/registry", "dojo/on", "thirty/fromq"], function (reg, on, fromq) {
-
-    //console.log(reg.byId("mainui").myModel);
-    var model = reg.byId("mainui").myModel, cmdCode = "S0255";
-    var root;
-    model.getRoot(function (item) {
-        root = item;
-    });
-
-    var checkfn = fromq("(o,cmd,q)=>o['cmdCode']?q(o['cmdCode']).where('(o,i,cmd)=>o===cmd',cmd).count()>0:false");
-    console.log(checkfn.toString());
-    //fromq("1,2,3").each("o=>console.log(o)");
-    var fetch = function (root) {
-        var ret = null;
-        model.getChildren(root, function (items) {
-            // console.log(items);
-            fromq(items).each(function (item) {
-                console.log(item['cmdCode']);
-
-                if (item['cmdCode']) {
-                    if (fromq(item['cmdCode']).where("(o,i,cmd)=>o===cmd", cmdCode).count() > 0) {
-                        ret = item;
-                        return item;
-                    }
-                }
-                //
-                //if (checkfn(item,cmdCode , fromq)) {
-                //    ret = item;
-                //    return item;
-                //}
-                if (!ret)ret = fetch(item);
-            });
-        });
-        return ret;
-    };
-    console.log(fetch(root));
-});
 //=========================================
 var src = "(o,i)=>console.log(o)";
 var afn = lambda(src), bfn = lambda(src);
