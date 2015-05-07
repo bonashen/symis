@@ -419,7 +419,7 @@
             }
             return dest;
         },
-        mapKvo = function (keys, values) {
+        makeKvo = function (keys, values) {
             var ret = {};
             for (var i = 0, l = keys.length; i < l; ++i) {
                 ret[keys[i]] = values[i];
@@ -1551,8 +1551,8 @@
         //| extend({},[{name:'bona shen'},{age:38}]);
         extend: extend,
         //example:
-        // | mapKvo(['name','age'],['kerry',5]);
-        mapKvo: mapKvo
+        // | makeKvo(['name','age'],['kerry',5]);
+        makeKvo: makeKvo
     });
 
     extend(fromq, {
