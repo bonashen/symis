@@ -63,14 +63,23 @@
             throw new Error("fromq/method error," + msg);
         };
 
-    var reGetClass = /^\[object\s+(\w+)\s*]$/;
+    //var reGetClass = /^\[object\s+(\w+)\s*]$/;
+
+    var objectRegExp = /^\[object (\S+)\]$/;
 
     var toString = Object.prototype.toString;
 
     var getClass = function (it) {
-            var cls = toString.call(it);
-            reGetClass.lastIndex = 0;
-            return reGetClass.exec(cls)[1];
+            var ret = typeof it;
+            if (ret !== 'object') {
+                return ret;
+            }
+            return toString.call(it)
+                .replace(objectRegExp, '$1');
+
+            //var cls = toString.call(it);
+            //reGetClass.lastIndex = 0;
+            //return reGetClass.exec(cls)[1];
         },
         dppiCache = {},
 
@@ -1591,7 +1600,7 @@
     }
 
 //for AMD
-    if (isFunction(define) && define.amd) {
+    if (typeof(define)!=='undefined' && isFunction(define) &&define.amd) {
         define(null, [], function () {
             return fromq;
         });
