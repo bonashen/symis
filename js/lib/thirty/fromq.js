@@ -730,8 +730,21 @@
         // where(function(item,index){ });
         // example2:
         // where("(a,i)=>a")
+        // | where({"name":"bona shen"})
         // | let(4).where("(a,i,n)=>a<n");
-        where: function (/*Function|Lambda*/clause) {
+        where: function (/*Function|Lambda|object*/clause) {
+            if (isObject(clause))clause = (function (it) {//支持对象值查询
+                return function (item) {
+                    var ret = true;
+                    for (var key in it) {
+                        ret = ret && (item[key] === it[key]);
+                        if (ret == false) {
+                            break;
+                        }
+                    }
+                    return ret;
+                }
+            })(clause);
             clause = clauseConverter(clause, null, function () {
                 return true
             });
@@ -1600,7 +1613,7 @@
     }
 
 //for AMD
-    if (typeof(define)!=='undefined' && isFunction(define) &&define.amd) {
+    if (typeof(define) !== 'undefined' && isFunction(define) && define.amd) {
         define(null, [], function () {
             return fromq;
         });
